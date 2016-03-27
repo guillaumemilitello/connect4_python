@@ -277,28 +277,6 @@ def moveEvaluation(m_board, token):
                     # force play
                     score += forced_move
 
-#     for col in range(board.width - 4):
-#         for line in range(board.height):
-#             if m_board[line][col    ] == ''    and \
-#                m_board[line][col + 1] == ''    and \
-#                m_board[line][col + 2] == token and \
-#                m_board[line][col + 3] == token and \
-#                m_board[line][col + 4] == '':
-#                 # --XX-
-#                 # minor play
-#                 score += advance_move
-# 
-#     for col in range(board.width - 4):
-#         for line in range(board.height):
-#             if m_board[line][col    ] == ''    and \
-#                m_board[line][col + 1] == token and \
-#                m_board[line][col + 2] == token and \
-#                m_board[line][col + 3] == ''    and \
-#                m_board[line][col + 4] == '':
-#                 # -XX--
-#                 # minor play
-#                 score += advance_move
-
     for col in range(board.width - 4):
         for line in range(board.height):
             if m_board[line][col    ] == ''    and \
