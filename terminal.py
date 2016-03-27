@@ -21,6 +21,7 @@ class color:
     RED_H    =  5
     YELLOW_H =  6
 
+# MAC OS X mapping
 class keyboard:
     LEFT_KEY = 260
     RIGHT_KEY = 261
@@ -60,7 +61,7 @@ def init():
     stdscr.border(0)
     return stdscr, width, height
 
-def term():
+def close():
     curses.nocbreak(); stdscr.keypad(0); curses.echo()
     curses.endwin()
 
@@ -78,23 +79,25 @@ def defineColors():
 
 def clearLine(y):
     stdscr.addstr(y, 1, ' ' * (width - 2))
-    
-def getKey():
+
+def getKeywordKey():
     return stdscr.getch()
 
-def addString(y, x, string, color=color.BLACK, bold=False):
+def addString(y, x, string, string_color=color.BLACK, bold=False):
     if x == position.CENTER:
         x = width/2 - len(string)/2
+    options = 0
     if curses.can_change_color():
-        if bold:
-            stdscr.addstr(y, x, string, curses.color_pair(color) | curses.A_BOLD)
+        # tokens special cases color
+        if string == 'X':
+            options = curses.color_pair(color.RED) if not bold else curses.color_pair(color.RED_H) | curses.A_BOLD
+        elif string == 'O':
+            options = curses.color_pair(color.YELLOW) if not bold else curses.color_pair(color.YELLOW_H) | curses.A_BOLD
         else:
-            stdscr.addstr(y, x, string, curses.color_pair(color))
-    else:
-        if bold:
-            stdscr.addstr(y, x, string, curses.A_BOLD)
-        else:
-            stdscr.addstr(y, x, string)
+            options = curses.color_pair(string_color)
+    if bold:
+        options |= curses.A_BOLD
+    stdscr.addstr(y, x, string, options)
     stdscr.refresh()
 
 # main display

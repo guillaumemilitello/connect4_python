@@ -9,158 +9,155 @@ from signal import signal, SIGINT
 from sys import exit
 
 import draw
-import terminal
 import computer
 import board
 
-class keyboard:
-    LEFT_KEY = 260
-    RIGHT_KEY = 261
-    UP_KEY = 259
-    DOWN_KEY = 258
-    ENTER_KEY = 10
-    Q_KEY = 81
-    Q_UPPER_KEY = 113
-    Y_KEY = 89
-    Y_UPPER_KEY = 121
-    N_KEY = 78
-    N_UPPER_KEY = 110
+from board import Game
+from terminal import getKeywordKey, close, keyboard
 
-
-def mainMenu():
-    pos = 0
-    player_token = ''
-    turn = ''
-
-    while player_token == '':
-        
-        draw.menuToken(pos)
-        
-        k = terminal.getKey()
-
-        if k == keyboard.DOWN_KEY and pos < 1:
-            pos += 1;
-        elif k == keyboard.UP_KEY and pos > 0:
-            pos -= 1;
-        # press enter
-        elif k == keyboard.ENTER_KEY and pos == 0:
-            player_token = 'X'
-            computer_token = 'O'
-        elif k == keyboard.ENTER_KEY and pos == 1:
-            player_token = 'O'
-            computer_token = 'X'
-
-    # default choice computer
-    pos = 1
-    while not (turn == 'player' or turn == 'computer'):
-        draw.menuTurn(pos)
-        k = terminal.getKey()
-
-        if k == keyboard.DOWN_KEY and pos < 2:
-            pos += 1;
-        elif k == keyboard.UP_KEY and pos > 0:
-            pos -= 1;
-        # press enter
-        elif k == keyboard.ENTER_KEY:
-            if pos == 0:
-                turn = 'player'
-            elif pos == 1:
-                turn = 'computer'
-            elif pos == 2:
-                if randint(0, 1) == 0:
-                    turn = 'computer'
-                else:
-                    turn = 'player'
-                    
-    draw.menuClear()
-    return player_token, computer_token, turn
+QUIT_GAME = -1
 
 def main():
 
-    global main_board
-    main_board = [['' for _ in range(board.width)] for _ in range(board.height)]
+    # return an initialized game
+    main_game = mainMenu()
     player_score = 0
     computer_score = 0
-    
-    player_token, computer_token, turn = mainMenu()
 
-    # until the player wants to play
+    # until the player wants to play, break on QUIT_GAME
     while True:
-        draw.boardScores(player_token, computer_token, player_score, computer_score)
+        draw.boardScores(main_game.player_token, main_game.computer_token, player_score, computer_score)
         draw.boardEmpty()
-        # until the current game is on
+
+        # until the current game is on, break on victory
         while True:
-            if turn == 'player':
+
+            if main_game.turn == 'player':
                 draw.noticeMove()
-                move = getHumanMoveArrow()
-                # quit
-                if move == -1:
+                move = getHumanMoveArrow(main_game)
+                # quit game
+                if move == QUIT_GAME:
                     return
-                line = board.makeMove(main_board, player_token, move)
-                draw.boardToken(main_board, move)
-                if board.isWinner(main_board, player_token, True):
+                winner_move, line = main_game.makeMove(move)
+                if winner_move:
+                    draw.boardWinnerTokens(move, line, main_game.player_token, main_game.winner_tokens)
                     player_score += 1
                     break
-                # next turn
-                turn = 'computer'
-            else:
+                else:
+                    draw.boardToken(move, line, main_game.player_token)
+
+            if main_game.turn == 'computer':
                 draw.noticeComputer()
-                move = computer.getComputerBestMove(main_board, computer_token)
-                line = board.makeMove(main_board, computer_token, move)
-                draw.boardToken(main_board, move)
-                if board.isWinner(main_board, computer_token, True):
+                # TODO : solve None computer status
+                move = computer.getComputerBestMove(main_game)
+                winner_move, line = main_game.makeMove(move)
+                if winner_move:
+                    draw.boardWinnerTokens(move, line, main_game.computer_token, main_game.winner_tokens)
                     computer_score += 1
                     break
-                # next turn
-                turn = 'player'
+                else:
+                    draw.boardToken(move, line, main_game.computer_token)
 
-            if board.isBoardFull(main_board):
+            # drawn game
+            if main_game.full():
                 break
 
         # update boardScores
-        draw.boardScores(player_token, computer_token, player_score, computer_score)
+        draw.boardScores(main_game.player_token, main_game.computer_token, player_score, computer_score)
         if menuPlayAgain():
-            for col in range(board.width):
-                for line in range(board.height):
-                    main_board[line][col] = ''
+            main_game.reset()
         else:
-            return
+            break
+
+def mainMenu():
+    position = 0
+    player_token = ''
+    first_turn = ''
+    level = 0
+
+    # player token choice
+    while player_token == '':
+        draw.menuToken(position)
+        k = getKeywordKey()
+        if k == keyboard.DOWN_KEY and position < 1:
+            position += 1;
+        elif k == keyboard.UP_KEY and position > 0:
+            position -= 1;
+        elif k == keyboard.ENTER_KEY:
+            player_token = 'X' if position == 0 else 'O'
+
+    # first turn choice, default is computer
+    position = 1
+    while first_turn == '':
+        draw.menuTurn(position)
+        k = getKeywordKey()
+        if k == keyboard.DOWN_KEY and position < 2:
+            position += 1;
+        elif k == keyboard.UP_KEY and position > 0:
+            position -= 1;
+        elif k == keyboard.ENTER_KEY:
+            if position == 0:
+                first_turn = 'player'
+            elif position == 1:
+                first_turn = 'computer'
+            # random choice
+            elif position == 2:
+                if randint(0, 1) == 0:
+                    first_turn = 'computer'
+                else:
+                    first_turn = 'player'
+
+    # level choice, default is 4
+    position = 3
+    while level == 0:
+        draw.menuLevel(position)
+        k = getKeywordKey()
+        if k == keyboard.DOWN_KEY and position < 5:
+            position += 1;
+        elif k == keyboard.UP_KEY and position > 0:
+            position -= 1;
+        elif k == keyboard.ENTER_KEY:
+            level = position + 1
+
+    draw.menuClear()
+    return Game(player_token, first_turn, level)
 
 def menuPlayAgain():
     draw.noticePlayAgain()
     while True:
-        k = terminal.getKey()
-        # 
+        k = getKeywordKey()
         if k ==  keyboard.Y_UPPER_KEY or k == keyboard.Y_KEY or k == keyboard.ENTER_KEY:
             return True
         elif k == keyboard.N_UPPER_KEY or k == keyboard.N_KEY or k == keyboard.Q_UPPER_KEY or k == keyboard.Q_KEY:
             return False
 
-def getHumanMoveArrow():
-    pos = 3
+def getHumanMoveArrow(main_game):
+    position = 3
     while True:
-        # draw arrow full string
-        draw.boardArrow(pos)
-        k = terminal.getKey()
-        if k == keyboard.RIGHT_KEY and pos < board.width-1:
-            pos += 1
-        elif k == keyboard.LEFT_KEY and pos > 0:
-            pos -= 1
-        elif k == keyboard.ENTER_KEY and board.isValidMove(main_board, pos):
+        # draw arrow position
+        draw.arrowMove(position)
+        k = getKeywordKey()
+        if k == keyboard.RIGHT_KEY and position < board.width-1:
+            position += 1
+        elif k == keyboard.LEFT_KEY and position > 0:
+            position -= 1
+        # check the move validity
+        elif k == keyboard.ENTER_KEY and main_game.validMove(position):
             break
+        # quit game
         elif k == keyboard.Q_UPPER_KEY or k == keyboard.Q_KEY:
-            return -1
+            return QUIT_GAME
 
     # remove detailed arrow
-    terminal.clearLine(6)
-    return pos
+    draw.arrowMoveClear()
+    return position
 
 # handle SIGINT signal
 def signalHandler(signum, frame):
-    terminal.term()
+    close()
     exit()
 
 if __name__ == '__main__':
     signal(SIGINT, signalHandler)
     main()
-    terminal.term()
+    close()

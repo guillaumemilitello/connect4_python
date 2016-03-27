@@ -31,6 +31,51 @@ def menuTurn(choice):
         terminal.addString(10, terminal.position.CENTER, '    computer ', terminal.color.GREY)
         terminal.addString(11, terminal.position.CENTER, '--> random   ', terminal.color.BLACK, True)
 
+def menuLevel(choice):
+    terminal.addString(13, terminal.position.CENTER, 'Choose the level', terminal.color.BLACK)
+    if choice == 0:
+        terminal.addString(14, terminal.position.CENTER, '--> 1   ', terminal.color.BLACK, True)
+        terminal.addString(15, terminal.position.CENTER, '    2   ', terminal.color.GREY)
+        terminal.addString(16, terminal.position.CENTER, '    3   ', terminal.color.GREY)
+        terminal.addString(17, terminal.position.CENTER, '    4   ', terminal.color.GREY)
+        terminal.addString(18, terminal.position.CENTER, '    5   ', terminal.color.GREY)
+        terminal.addString(19, terminal.position.CENTER, '    6   ', terminal.color.GREY)
+    elif choice == 1:
+        terminal.addString(14, terminal.position.CENTER, '    1   ', terminal.color.GREY)
+        terminal.addString(15, terminal.position.CENTER, '--> 2   ', terminal.color.BLACK, True)
+        terminal.addString(16, terminal.position.CENTER, '    3   ', terminal.color.GREY)
+        terminal.addString(17, terminal.position.CENTER, '    4   ', terminal.color.GREY)
+        terminal.addString(18, terminal.position.CENTER, '    5   ', terminal.color.GREY)
+        terminal.addString(19, terminal.position.CENTER, '    6   ', terminal.color.GREY)
+    elif choice == 2:
+        terminal.addString(14, terminal.position.CENTER, '    1   ', terminal.color.GREY)
+        terminal.addString(15, terminal.position.CENTER, '    2   ', terminal.color.GREY)
+        terminal.addString(16, terminal.position.CENTER, '--> 3   ', terminal.color.BLACK, True)
+        terminal.addString(17, terminal.position.CENTER, '    4   ', terminal.color.GREY)
+        terminal.addString(18, terminal.position.CENTER, '    5   ', terminal.color.GREY)
+        terminal.addString(19, terminal.position.CENTER, '    6   ', terminal.color.GREY)
+    elif choice == 3:
+        terminal.addString(14, terminal.position.CENTER, '    1   ', terminal.color.GREY)
+        terminal.addString(15, terminal.position.CENTER, '    2   ', terminal.color.GREY)
+        terminal.addString(16, terminal.position.CENTER, '    3   ', terminal.color.GREY)
+        terminal.addString(17, terminal.position.CENTER, '--> 4   ', terminal.color.BLACK, True)
+        terminal.addString(18, terminal.position.CENTER, '    5   ', terminal.color.GREY)
+        terminal.addString(19, terminal.position.CENTER, '    6   ', terminal.color.GREY)
+    elif choice == 4:
+        terminal.addString(14, terminal.position.CENTER, '    1   ', terminal.color.GREY)
+        terminal.addString(15, terminal.position.CENTER, '    2   ', terminal.color.GREY)
+        terminal.addString(16, terminal.position.CENTER, '    3   ', terminal.color.GREY)
+        terminal.addString(17, terminal.position.CENTER, '    4   ', terminal.color.GREY)
+        terminal.addString(18, terminal.position.CENTER, '--> 5   ', terminal.color.BLACK, True)
+        terminal.addString(19, terminal.position.CENTER, '    6   ', terminal.color.GREY)
+    else:
+        terminal.addString(14, terminal.position.CENTER, '    1   ', terminal.color.GREY)
+        terminal.addString(15, terminal.position.CENTER, '    2   ', terminal.color.GREY)
+        terminal.addString(16, terminal.position.CENTER, '    3   ', terminal.color.GREY)
+        terminal.addString(17, terminal.position.CENTER, '    4   ', terminal.color.GREY)
+        terminal.addString(18, terminal.position.CENTER, '    5   ', terminal.color.GREY)
+        terminal.addString(19, terminal.position.CENTER, '--> 6   ', terminal.color.BLACK, True)
+
 def menuClear():
     terminal.clearLine(5)
     terminal.clearLine(6)
@@ -49,10 +94,13 @@ def boardScores(player_token, computer_token, player_score, computer_score):
     else:
         terminal.addString(4, x, 'O', terminal.color.YELLOW)
 
-def boardArrow(move):
+def arrowMove(move):
     terminal.clearLine(6)
     x = terminal.width/2 - (board.width*board.col_width+1)/2 +board.col_width*move+3 
     terminal.addString(6, x, 'V', terminal.color.BLACK, True)
+
+def arrowMoveClear():
+    terminal.clearLine(6)
 
 def boardEmpty():
     y = 7
@@ -67,33 +115,32 @@ def boardEmpty():
             terminal.addString(y+2, terminal.position.CENTER, ('|'+(' '*(board.col_width-1)))*board.width + '|', terminal.color.BLUE)
             y += 3
 
-def boardToken(m_board, move):
-    for line in range(board.height):
-        if not m_board[line][move] == '':
-            x = terminal.width/2 - (board.width*board.col_width+1)/2 +board.col_width*move+3
-            y = 7+(board.col_height*line)+1
-            if m_board[line][move] == 'X':
-                terminal.addString(y, x, 'X', terminal.color.RED)
-            elif m_board[line][move] == 'O':
-                terminal.addString(y, x, 'O', terminal.color.YELLOW)
-            return
+def boardToken(move, line, token):
+        x = terminal.width/2 - (board.width*board.col_width+1)/2 +board.col_width*move+3
+        y = 7+(board.col_height*line)+1
+        terminal.addString(y, x, token)
 
-def boardTokenBold(line, col, token):
-    x = terminal.width/2 - (board.width*board.col_width+1)/2 +board.col_width*col+3
-    y = 7+(board.col_height*line)+1
-    if token == 'X':
-        terminal.addString(y, x, token, terminal.color.RED_H, True)
-    elif token == 'O':
-        terminal.addString(y, x, token, terminal.color.YELLOW_H, True)
+def boardWinnerTokens(move, line, token, winner_tokens):
+    for i in range(len(winner_tokens)):
+        line = winner_tokens[i][0]
+        col  = winner_tokens[i][1]
+        x = terminal.width/2 - (board.width*board.col_width+1)/2 +board.col_width*col+3
+        y = 7+(board.col_height*line)+1
+        terminal.addString(y, x, token, 0, True)
 
 def noticeMove():
     terminal.clearLine(26)
-    terminal.addString(26, terminal.position.CENTER, 'Make your move or quit ? [q]', terminal.color.BLACK)
+    terminal.addString(26, terminal.position.CENTER, 'Make your move or quit ? [q]')
 
 def noticeComputer():
     terminal.clearLine(26)
-    terminal.addString(26, terminal.position.CENTER, 'The computer is thinking...', terminal.color.BLACK)
+    terminal.addString(26, terminal.position.CENTER, 'The computer is thinking...')
 
 def noticePlayAgain():
     terminal.clearLine(26)
     terminal.addString(26, terminal.position.CENTER, 'Do you want to play again ? [y,n]', terminal.color.BLACK, True)
+
+def debug(string):
+    terminal.clearLine(27)
+    terminal.addString(27, terminal.position.CENTER, string, terminal.color.BLUE, True)
+    terminal.getKeywordKey()
