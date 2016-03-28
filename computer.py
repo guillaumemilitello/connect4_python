@@ -9,7 +9,8 @@ from random import choice
 import board
 import debug
 
-__dbg__ = True
+# debug traces on file
+__dbg__ = False
 
 moves_look = 5
 
