@@ -108,7 +108,7 @@ def mainMenu():
                     first_turn = 'player'
 
     # level choice, default is 4
-    position = 3
+    position = 2
     while level == 0:
         draw.menuLevel(position)
         k = getKeywordKey()
@@ -117,7 +117,7 @@ def mainMenu():
         elif k == keyboard.UP_KEY and position > 0:
             position -= 1;
         elif k == keyboard.ENTER_KEY:
-            level = position + 1
+            level = position + 2
 
     draw.menuClear()
     return Game(player_token, first_turn, level)
