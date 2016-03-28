@@ -123,12 +123,12 @@ def noticeMove():
 def noticeComputer():
     terminal.clearLine(26)
     terminal.addString(26, terminal.position.CENTER, 'The computer is thinking...')
+    terminal.clearLine(27)
+
+def noticeComputerTime(time):
+    terminal.clearLine(27)
+    terminal.addString(27, terminal.position.CENTER, 'computer\'s move calculated in %.3fs' %time, terminal.color.GREY)
 
 def noticePlayAgain():
     terminal.clearLine(26)
     terminal.addString(26, terminal.position.CENTER, 'Do you want to play again ? [y,n]', terminal.color.BLACK, True)
-
-def debug(string):
-    terminal.clearLine(27)
-    terminal.addString(27, terminal.position.CENTER, string, terminal.color.BLUE, True)
-    terminal.getKeywordKey()

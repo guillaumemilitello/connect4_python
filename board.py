@@ -4,8 +4,6 @@ Created on Mar 19, 2016
 @author: guillaume
 '''
 
-import draw
-
 width = 7
 height = 6
 center = width / 2

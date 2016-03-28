@@ -7,6 +7,7 @@ Created on Mar 5, 2016
 from random import randint
 from signal import signal, SIGINT
 from sys import exit
+from time import clock
 
 import draw
 import computer
@@ -48,8 +49,9 @@ def main():
 
             if main_game.turn == 'computer':
                 draw.noticeComputer()
-                # TODO : solve None computer status
+                start_time = clock()
                 move = computer.getComputerBestMove(main_game)
+                draw.noticeComputerTime(clock() - start_time)
                 winner_move, line = main_game.makeMove(move)
                 if winner_move:
                     draw.boardWinnerTokens(move, line, main_game.computer_token, main_game.winner_tokens)
