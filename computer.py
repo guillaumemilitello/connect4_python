@@ -12,8 +12,10 @@ import debug
 # debug traces on file
 __dbg__ = False
 
-moves_look = 5
+# number of deeper moves to look for (max : 7)
+deep_moves_number = 5
 
+# board evaluation coefficients
 invalid_move  = -999999
 winning_move  =     100
 loosing_move  =    -100
@@ -23,7 +25,7 @@ advance_move  =       3
 
 def getComputerBestMove(main_game):
 
-    # focus on the middle column at first
+    # focus on the middle column for the first moves
     if main_game.sum_tokens < board.height:
         status = True
         for col in range(board.width):
@@ -133,7 +135,7 @@ def turnScore(game):
         for score in all_scores:
             if not score[1] in moves and not score[0] == invalid_move:
                 moves.append(score[1])
-            if len(moves) == moves_look:
+            if len(moves) == deep_moves_number:
                 break
 
         # don't play the others moves
