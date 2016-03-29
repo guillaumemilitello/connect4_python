@@ -13,7 +13,7 @@ import debug
 __dbg__ = False
 
 # number of deeper moves to look for (max : 7)
-deep_moves_number = 5
+deep_moves_number = 7
 
 # board evaluation coefficients
 invalid_move  = -999999
@@ -211,385 +211,240 @@ def moveScore(game, move):
     return player_score - base_score, opponent_score - base_score
 
 def moveEvaluation(m_board, token):
-    score = 0
 
-    for col in range(board.width - 3):
-        for line in range(board.height):
-            if m_board[line][col    ] == token and \
-               m_board[line][col + 1] == token and \
-               m_board[line][col + 2] == token and \
-               m_board[line][col + 3] == '':
-                # XXX-
-                # ???-
-                if line < board.height - 1 and m_board[line + 1][col + 3] == '':
-                    # trap
-                    score += traped_move
-                # XXX-
-                # ????
-                    # force play
-                    score += forced_move
+    # horizontal check
+    # XXX- XXX- X-XX X-XX XX-X XX-X -XXX -XXX -XXX-
+    # ???- ???? ?-?? ???? ??-? ???? -??? ???? ?????
+    score = horizontalEvaluation(m_board, token)
 
-    for col in range(board.width - 3):
-        for line in range(board.height):
-            if m_board[line][col    ] == ''    and \
-               m_board[line][col + 1] == token and \
-               m_board[line][col + 2] == token and \
-               m_board[line][col + 3] == token:
-                # -XXX
-                # -???
-                if line < board.height - 1 and m_board[line + 1][col] == '':
-                    # trap
-                    score += traped_move
-                # -XXX
-                # ????
-                else:
-                    # force play
-                    score += forced_move
-
-    for col in range(board.width - 3):
-        for line in range(board.height):
-            if m_board[line][col    ] == token and \
-               m_board[line][col + 1] == ''    and \
-               m_board[line][col + 2] == token and \
-               m_board[line][col + 3] == token:
-                # X-XX
-                # ?-??
-                if line < board.height - 1 and m_board[line + 1][col + 1] == '':
-                    # trap
-                    score += traped_move
-                # X-XX
-                # ????
-                else:
-                    # force play
-                    score += forced_move
-    
-    for col in range(board.width - 3):
-        for line in range(board.height):
-            if m_board[line][col    ] == token and \
-               m_board[line][col + 1] == token and \
-               m_board[line][col + 2] == ''    and \
-               m_board[line][col + 3] == token:
-                # XX-X
-                # ??-?
-                if line < board.height - 1 and m_board[line + 1][col + 2] == '':
-                    # trap
-                    score += traped_move
-                # XX-X
-                # ????
-                else:
-                    # force play
-                    score += forced_move
-
-    for col in range(board.width - 4):
-        for line in range(board.height):
-            if m_board[line][col    ] == ''    and \
-               m_board[line][col + 1] == token and \
-               m_board[line][col + 2] == token and \
-               m_board[line][col + 3] == token and \
-               m_board[line][col + 4] == '':
-                # -XXX-
-                # -???-
-                if line < board.height - 1 and m_board[line + 1][col] == '' and m_board[line + 1][col + 4] == '':
-                    # double force trap (already)
-                    score += traped_move
-                elif line < board.height - 1 and (m_board[line + 1][col] == '' or m_board[line + 1][col + 4] == ''):
-                    # -XXX- -XXX-
-                    # ????- -????
-                    # force play already + trap
-                    score += traped_move
-                else:
-                    # -XXX-
-                    # ?????
-                    # winning move
-                    score += winning_move
-
+    # vertical check
     # -
     # X
     # X
     # X
+    score += verticalEvaluation(m_board, token)
+
+    # diagonal check
+    # X    X    X    X    X    X    -    -    -
+    # ?X   ?X   ?X   ?X   ?-   ?-   ?X   -X   ?X
+    # ??X  ??X  ??-  ??-  ??X  ?-X  ??X  ??X  ??X
+    # ???- ???- ???X ??-X ???X ???X ???X ???X ???X
+    # ???? ???- ???? ???? ???? ???? ???? ???? ????-
+    score += diagonalEvaluation(m_board, token)
+
+    m_board_mirror = [['' for _ in range(board.width)] for _ in range(board.height)]
+    for col in range(board.width):
+        for line in range(board.height):
+            m_board_mirror[line][col] = m_board[line][board.width - 1 - col]
+
+    # diagonal check mirrored
+    score += diagonalEvaluation(m_board_mirror, token)
+
+    return score
+
+def horizontalEvaluation(m_board, token):
+    score = 0
+    for col in range(board.width - 3):
+        for line in range(board.height):
+            if m_board[line][col] == token:
+                # XXX- XX-X
+                if m_board[line][col + 1] == token:
+                    # XXX-
+                    if m_board[line][col + 2] == token and \
+                       m_board[line][col + 3] == '':
+                        if line < board.height - 1:
+                            # XXX-
+                            # ???-
+                            if m_board[line + 1][col + 3] == '':
+                                score += traped_move
+                            # XXX-
+                            # ????
+                            else:
+                                score += forced_move
+                        # XXX-
+                        else:
+                            score += forced_move
+                    # XX-X
+                    elif m_board[line][col + 2] == '' and \
+                         m_board[line][col + 3] == token:
+                        if line < board.height - 1:
+                            # XX-X
+                            # ??-?
+                            if m_board[line + 1][col + 2] == '':
+                                score += traped_move
+                            # XX-X
+                            # ????
+                            else:
+                                score += forced_move
+                        # XX-X
+                        else:
+                            score += forced_move
+                # X-XX
+                elif m_board[line][col + 1] == ''    and \
+                     m_board[line][col + 2] == token and \
+                     m_board[line][col + 3] == token:
+                    if line < board.height - 1:
+                        # X-XX
+                        # ?-??
+                        if m_board[line + 1][col + 1] == '':
+                            score += traped_move
+                        # X-XX
+                        # ????
+                        else:
+                            score += forced_move
+                    # X-XX
+                    else:
+                        score += forced_move
+            # -XXX -XXX-
+            elif m_board[line][col] == '' and \
+                 m_board[line][col + 1] == token and \
+                 m_board[line][col + 2] == token and \
+                 m_board[line][col + 3] == token:
+                if line < board.height - 1:
+                    # -XXX
+                    # -???
+                    if m_board[line + 1][col] == '':
+                        score += traped_move
+                    # -XXX-
+                    # ?????
+                    elif col < board.width - 4 and m_board[line][col + 4] == '' and \
+                         not m_board[line + 1][col + 4] == '':
+                        score += winning_move
+                    # -XXX
+                    # ????
+                    else:
+                        score += forced_move
+                # -XXX-
+                elif col < board.width - 4 and m_board[line][col + 4] == '':
+                    score += winning_move
+                # -XXX
+                else:
+                    score += forced_move
+    return score
+
+def verticalEvaluation(m_board, token):
+    score=0
     for col in range(board.width):
         for line in range(board.height - 3):
+            # -
+            # X
+            # X
+            # X
             if m_board[line    ][col] == ''    and \
                m_board[line + 1][col] == token and \
                m_board[line + 2][col] == token and \
                m_board[line + 3][col] == token:
                 # force play
                 score += forced_move
-
-    # -
-    # X
-    # X
-    for col in range(board.width):
-        for line in range(board.height - 2):
-            if m_board[line    ][col] == ''    and \
-               m_board[line + 1][col] == token and \
-               m_board[line + 2][col] == token:
-                # minor play
-                score += advance_move
-
-    #   -
-    #  X?
-    # X??
-    for col in range(2, board.width):
-        for line in range(board.height - 3):
-            if m_board[line    ][col    ] == ''    and \
-               m_board[line + 1][col - 1] == token and \
-               m_board[line + 2][col - 2] == token:
-                # minor play
-                score += advance_move
-
-    # -
-    # ?X
-    # ??X
-    for col in range(board.width - 3):
-        for line in range(board.height - 3):
-            if m_board[line    ][col    ] == ''    and \
-               m_board[line + 1][col + 1] == token and \
-               m_board[line + 2][col + 2] == token:
-                # minor play
-                score += advance_move
-
-    for col in range(board.width - 3):
-        for line in range(board.height - 3):
-            if m_board[line    ][col    ] == ''    and \
-               m_board[line + 1][col + 1] == token and \
-               m_board[line + 2][col + 2] == token and \
-               m_board[line + 3][col + 3] == token:
-                # -
-                # -X
-                # ??X
-                # ???X
-                if m_board[line + 1][col] == '':
-                    # trap
-                    score += traped_move
-                # -
-                # ?X
-                # ??X
-                # ???X
-                else:
-                    # force play
-                    score += forced_move
-
-    for col in range(board.width - 3):
-        for line in range(board.height - 3):
-            if m_board[line    ][col    ] == token and \
-               m_board[line + 1][col + 1] == ''    and \
-               m_board[line + 2][col + 2] == token and \
-               m_board[line + 3][col + 3] == token:
-                # X
-                # ?-
-                # ?-X
-                # ???X
-                if m_board[line + 2][col + 1] == '':
-                    # trap
-                    score += traped_move
-                # X
-                # ?-
-                # ??X
-                # ???X
-                else:
-                    # force play
-                    score += forced_move
-
-    for col in range(board.width - 3):
-        for line in range(board.height - 3):
-            if m_board[line    ][col    ] == token and \
-               m_board[line + 1][col + 1] == token and \
-               m_board[line + 2][col + 2] == ''    and \
-               m_board[line + 3][col + 3] == token:
-                # X
-                # ?X
-                # ??-
-                # ??-X
-                if m_board[line + 3][col + 2] == '':
-                    # trap
-                    score += traped_move
-                # X
-                # ?X
-                # ??-
-                # ???X
-                else:
-                    # force play
-                    score += forced_move
-
-    for col in range(board.width - 3):
-        for line in range(board.height - 3):
-            if m_board[line    ][col    ] == token and \
-               m_board[line + 1][col + 1] == token and \
-               m_board[line + 2][col + 2] == token and \
-               m_board[line + 3][col + 3] == '':
-                # X
-                # ?X
-                # ??X
-                # ???-
-                # ???-
-                if line + 4 < board.height - 1 and m_board[line + 4][col + 3] == '':
-                    # trap
-                    score += traped_move
-                # X
-                # ?X
-                # ??X
-                # ???-
-                # ????
-                else:
-                    # force play
-                    score += forced_move
-
-    for col in range(board.width - 4):
-        for line in range(board.height - 4):
-            if m_board[line    ][col    ] == ''    and \
-               m_board[line + 1][col + 1] == token and \
-               m_board[line + 2][col + 2] == token and \
-               m_board[line + 3][col + 3] == token and \
-               m_board[line + 4][col + 4] == '':
-                if m_board[line + 1][col] == '':
-                    # -
-                    # -X
-                    # ??X
-                    # ???X
-                    # ????-
-                    # ????-
-                    if line + 5 < board.height - 1 and m_board[line + 5][col + 4] == '':
-                        # double trap
-                        score += traped_move
-                    # -
-                    # -X
-                    # ??X
-                    # ???X
-                    # ????-
-                    # ?????
-                    else:
-                        # force play + trap
-                        score += traped_move
-                else:
-                    # -
-                    # ?X
-                    # ??X
-                    # ???X
-                    # ????-
-                    # ????-
-                    if line + 5 < board.height - 1 and m_board[line + 5][col + 4] == '':
-                        # force play + trap
-                        score += traped_move
-                    # -
-                    # ?X
-                    # ??X
-                    # ???X
-                    # ????-
-                    # ?????
-                    else:
-                        # winning board
-                        score += winning_move
-
-    for col in range(3, board.width):
-        for line in range(board.height - 3):
-            if m_board[line    ][col    ] == token and \
-               m_board[line + 1][col - 1] == token and \
-               m_board[line + 2][col - 2] == token and \
-               m_board[line + 3][col - 3] == '':
-                #    X
-                #   X?
-                #  X??
-                # -???
-                # -???
-                if line + 4 < board.height - 1 and m_board[line + 4][col - 3] == '':
-                    # trap
-                    score += traped_move
-                #    X
-                #   X?
-                #  X??
-                # -???
-                else:
-                    # force play
-                    score += forced_move
-
-    for col in range(3, board.width):
-        for line in range(board.height - 3):
-            if m_board[line    ][col    ] == token and \
-               m_board[line + 1][col - 1] == token and \
-               m_board[line + 2][col - 2] == ''    and \
-               m_board[line + 3][col - 3] == token:
-                #    X
-                #   X?
-                #  -??
-                # X-??
-                if m_board[line + 3][col - 2] == '':
-                    # trap
-                    score += traped_move
-                #    X
-                #   X?
-                #  -??
-                # X???
-                else:
-                    # force play
-                    score += forced_move
-
-    for col in range(3, board.width):
-        for line in range(board.height - 3):
-            if m_board[line    ][col    ] == token and \
-               m_board[line + 1][col - 1] == ''    and \
-               m_board[line + 2][col - 2] == token and \
-               m_board[line + 3][col - 3] == token:
-                #    X
-                #   -?
-                #  X-?
-                # X???
-                if m_board[line + 2][col - 1] == '':
-                    # trap
-                    score += traped_move
-                #    X
-                #   -?
-                #  X??
-                # X???
-                else:
-                    # force play
-                    score += forced_move
-
-    for col in range(4, board.width):
-        for line in range(board.height - 4):
-            if m_board[line    ][col    ] == ''    and \
-               m_board[line + 1][col - 1] == token and \
-               m_board[line + 2][col - 2] == token and \
-               m_board[line + 3][col - 3] == token and \
-               m_board[line + 4][col - 4] == '':
-                if m_board[line + 1][col] == '':
-                    #     -
-                    #    X-
-                    #   X??
-                    #  X???
-                    # -????
-                    # -????
-                    if line + 5 < board.height - 1 and m_board[line + 5][col - 4] == '':
-                        # double trap
-                        score += traped_move
-                    #     -
-                    #    X-
-                    #   X??
-                    #  X???
-                    # -????
-                    # ?????
-                    else:
-                        # force play + trap
-                        score += forced_move
-                else:
-                    #     -
-                    #    X?
-                    #   X??
-                    #  X???
-                    # -????
-                    # -????
-                    if line + 5 < board.height - 1 and m_board[line + 5][col - 4] == '':
-                        # force play + trap
-                        score += forced_move
-                    #     -
-                    #    X?
-                    #   X??
-                    #  X???
-                    # -????
-                    # ?????
-                    else:
-                        # winning board
-                        score += winning_move
-
     return score
 
+def diagonalEvaluation(m_board, token):
+    score=0
+    for col in range(board.width - 3):
+        for line in range(board.height - 3):
+            # X    X    X
+            # ?X   ?X   ?-
+            # ??X  ??-  ??X
+            # ???- ???X ???X
+            if m_board[line][col] == token :
+                # X    X
+                # ?X   ?X
+                # ??X  ??-
+                # ???- ???X
+                if m_board[line + 1][col + 1] == token:
+                    # X
+                    # ?X
+                    # ??X
+                    # ???-
+                    if m_board[line + 2][col + 2] == token and \
+                       m_board[line + 3][col + 3] == '':
+                        if line + 4 < board.height - 1:
+                            # X
+                            # ?X
+                            # ??X
+                            # ???-
+                            # ???-
+                            if m_board[line + 4][col + 3] == '':
+                                score += traped_move
+                            # X
+                            # ?X
+                            # ??X
+                            # ???-
+                            # ????
+                            else:
+                                score += forced_move
+                        # X
+                        # ?X
+                        # ??X
+                        # ???-
+                        else:
+                            score += forced_move
+                    # X
+                    # ?X
+                    # ??-
+                    # ???X
+                    elif m_board[line + 2][col + 2] == '' and \
+                         m_board[line + 3][col + 3] == token:
+                        # X
+                        # ?X
+                        # ??-
+                        # ??-X
+                        if m_board[line + 3][col + 2] == '':
+                            score += traped_move
+                        # X
+                        # ?X
+                        # ??-
+                        # ???X
+                        else:
+                            score += forced_move
+                # X
+                # ?-
+                # ??X
+                # ???X
+                elif m_board[line + 1][col + 1] == ''    and \
+                     m_board[line + 2][col + 2] == token and \
+                     m_board[line + 3][col + 3] == token:
+                        # X
+                        # ?-
+                        # ?-X
+                        # ??-X
+                        if m_board[line + 2][col + 1] == '':
+                            score += traped_move
+                        # X
+                        # ?-
+                        # ??X
+                        # ???X
+                        else:
+                            score += forced_move
+            # -    -
+            # ?X   ?X
+            # ??X  ??X
+            # ???X ???X
+            # ???? ????-
+            elif m_board[line    ][col    ] == ''    and \
+                 m_board[line + 1][col + 1] == token and \
+                 m_board[line + 2][col + 2] == token and \
+                 m_board[line + 3][col + 3] == token:
+                    # -
+                    # -X
+                    # ??X
+                    # ???X
+                    if m_board[line + 1][col] == '':
+                        # trap
+                        score += traped_move
+                    # -
+                    # ?X
+                    # ??X
+                    # ???X
+                    # ????-
+                    elif col < board.width - 4 and line < board.height -  4 and \
+                         m_board[line + 4][col + 4] == '':
+                        score += winning_move
+                    # -
+                    # ?X
+                    # ??X
+                    # ???X
+                    else:
+                        # force play
+                        score += forced_move
+    return score
