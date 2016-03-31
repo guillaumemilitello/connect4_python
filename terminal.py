@@ -42,7 +42,7 @@ def init():
     if height_term < height_min or width_term < width_min:
         # resize the terminal to fit the minimum size to display the connect4 before exit
         sys.stdout.write("\x1b[8;{h};{w}t".format(h=max(height_min, height_term), w=max(width_min, width_term)))
-        sys.exit('Please resize your terminal [%d%s%d] (minimum required %d%s%d)' %(width_term, 'x', height_term, width_min, 'x', height_min))
+        sys.exit('\033[91m' + 'The terminal was not sized properly, you can now restart ' + '\033[1m' + 'Connect4' + '\033[0m')
     stdscr = curses.initscr()
     height,width = stdscr.getmaxyx()
     if height < height_min or width < width_min:
