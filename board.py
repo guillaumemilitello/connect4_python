@@ -23,6 +23,31 @@ class Game:
         self.m_board = [['' for _ in range(width)] for _ in range(height)]
         self.winner_tokens = []
 
+    def __eq__(self, other):
+        if self.sum_tokens == other.sum_tokens:
+            if self.sum_tokens == 0:
+                return True
+            else:
+                m_board_reverse = self.reverse()
+                status = True
+                status_mirror = True
+                for col in range(width):
+                    for line in range(height):
+                        if not self.m_board[line][col] == other.m_board[line][col]:
+                            status = False
+                        if not m_board_reverse[line][col] == other.m_board[line][col]:
+                            status_mirror = False
+                        if not status and not status_mirror:
+                            break
+                    if not status and not status_mirror:
+                        break
+                return status ^ status_mirror
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def token(self):
         if self.turn == 'player':
             return self.player_token
@@ -81,6 +106,16 @@ class Game:
         else:
             return False
 
+    def reverse(self):
+        m_board_reverse = [['' for _ in range(width)] for _ in range(height)]
+        for col in range(width):
+            for line in range(height):
+                if self.m_board[line][col] == 'X':
+                    m_board_reverse[line][col] = 'O'
+                elif self.m_board[line][col] == 'O':
+                    m_board_reverse[line][col] = 'X'
+        return m_board_reverse
+
     def won(self, token):
         status = False
         # check horizontal
@@ -132,223 +167,23 @@ class Game:
                     status = True
         return status
 
-def makeMove(m_board, token, move):
-    for line in range(height - 1, -1, -1):
-        if m_board[line][move] == '':
-            m_board[line][move] = token
-            return line
+class PredefinedGame(Game):
 
-def isValidMove(m_board, move):
-    if move < 0 or move > width - 1:
-        return False
+    def __init__(self, m_predefined_board = [['' for _ in range(width)] for _ in range(height)], move = 0):
+        Game.__init__(self)
+        sum_predefined_tokens = 0
+        for col in range(width):
+            for line in range(height):
+                if m_predefined_board[line][col] == 'X' or m_predefined_board[line][col] == 'O':
+                    sum_predefined_tokens += 1
+        self.sum_tokens = sum_predefined_tokens
+        self.m_board = m_predefined_board
+        self.move = move
 
-    for line in range(height - 1, -1, -1):
-        if not (m_board[line][move] == 'X' or m_board[line][move] == 'O'):
-            return True
 
-    return False
-
-def isBoardFull(m_board):
+def mirrorBoard(m_board):
+    m_board_mirror = [['' for _ in range(width)] for _ in range(height)]
     for col in range(width):
         for line in range(height):
-            if not(m_board[line][col] == 'X' or m_board[line][col] == 'O'):
-                return False
-    return True
-
-def isWinner(m_board, token):
-    # check horizontal
-    for col in range(width - 3):
-        for line in range(height):
-            if m_board[line][col  ] == token and m_board[line][col + 1] == token and \
-               m_board[line][col + 2] == token and m_board[line][col + 3] == token:
-                return True
-
-    # check vertical
-    for col in range(width):
-        for line in range(height - 3):
-            if m_board[line  ][col] == token and m_board[line + 1][col] == token and \
-               m_board[line + 2][col] == token and m_board[line + 3][col] == token:
-                return True
-
-    # check diagonals
-    for col in range(3, width):
-        for line in range(height - 3):
-            if m_board[line  ][col  ] == token and m_board[line + 1][col - 1] == token and \
-               m_board[line + 2][col - 2] == token and m_board[line + 3][col - 3] == token:
-                return True
-    
-    for col in range(width - 3):
-        for line in range(height - 3):
-            if m_board[line  ][col  ] == token and m_board[line + 1][col + 1] == token and \
-               m_board[line + 2][col + 2] == token and m_board[line + 3][col + 3] == token:
-                return True
-
-    return False
-
-def scoreStatus(m_board, token):
-    score = 0
-    # check horizontal
-    for col in range(width - 3):
-        for line in range(height):
-            if m_board[line][col] == token and m_board[line][col + 1] == token and m_board[line][col + 2] == token and m_board[line][col + 3] == '':
-                # XXX-
-                # ???-
-                if line < height - 1 and m_board[line + 1][col + 3] == '':
-                    score += 100
-                # XXX-
-                # ????
-                    score += 200
-
-    for col in range(width - 3):
-        for line in range(height):
-            if m_board[line][col] == '' and m_board[line][col + 1] == token and m_board[line][col + 2] == token and m_board[line][col + 3] == token:
-                # -XXX
-                # -???
-                if line < height - 1 and m_board[line + 1][col] == '':
-                    score += 100
-                # -XXX
-                # ????
-                    score += 200
-
-    for col in range(width - 3):
-        for line in range(height):
-            if m_board[line][col] == token and m_board[line][col + 1] == token and m_board[line][col + 2] == token and m_board[line][col + 3] == '':
-                # XXX-
-                # ???-
-                if line < height - 1 and m_board[line + 1][col + 3] == '':
-                    score += 100
-                # XXX-
-                # ????
-                    score += 200
-
-    for col in range(width - 3):
-        for line in range(height):
-            if m_board[line][col] == token and m_board[line][col + 1] == '' and m_board[line][col + 2] == token and m_board[line][col + 3] == token:
-                # X-XX
-                # ?-??
-                if line < height - 1 and m_board[line + 1][col + 1] == '':
-                    score += 100
-                # X-XX
-                # ????
-                    score += 200
-    
-    for col in range(width - 3):
-        for line in range(height):
-            if m_board[line][col] == token and m_board[line][col + 1] == token and m_board[line][col + 2] == '' and m_board[line][col + 3] == token:
-                # XX-X
-                # ??-?
-                if line < height - 1 and m_board[line + 1][col + 2] == '':
-                    score += 100
-                # XX-X
-                # ????
-                    score += 200
-
-    # --XX-
-    for col in range(width - 4):
-        for line in range(height):
-            if m_board[line][col    ] == ''    and m_board[line][col + 1] == ''    and \
-               m_board[line][col + 2] == token and m_board[line][col + 3] == token and \
-               m_board[line][col + 4] == '':
-                score += 50
-    # -XX--
-    for col in range(width - 4):
-        for line in range(height):
-            if m_board[line][col    ] == ''    and m_board[line][col + 1] == token and \
-               m_board[line][col + 2] == token and m_board[line][col + 3] == ''    and \
-               m_board[line][col + 4] == '':
-                score += 50
-    # check vertical
-    # -
-    # X
-    # X
-    # X
-    for col in range(width):
-        for line in range(height - 3):
-            if m_board[line][col] == '' and m_board[line + 1][col] == token and m_board[line + 2][col] == token and m_board[line + 3][col] == token:
-                score += 200
-
-    # check diagonals
-    for col in range(width - 3):
-        for line in range(height - 3):
-            if m_board[line][col] == '' and m_board[line + 1][col + 1] == token and m_board[line + 2][col + 2] == token and m_board[line + 3][col + 3] == token:
-                # -
-                # -X
-                # ??X
-                # ???X
-                if m_board[line + 1][col] == '':
-                    score += 100
-                # -
-                # ?X
-                # ??X
-                # ???X
-                else:
-                    score += 200
-
-    for col in range(width - 3):
-        for line in range(height - 3):
-            if m_board[line][col] == token and m_board[line + 1][col + 1] == token and m_board[line + 2][col + 2] == token and m_board[line + 3][col + 3] == '':
-                # X
-                # ?X
-                # ??X
-                # ???-
-                # ???-
-                if line + 3 < height - 1 and m_board[line + 1][col + 3] == '':
-                    score += 100
-                # X
-                # ?X
-                # ??X
-                # ???-
-                # ????
-                else:
-                    score += 200
-
-    for col in range(3, width):
-        for line in range(height - 3):
-            if m_board[line][col] == token and m_board[line + 1][col - 1] == token and m_board[line + 2][col - 2] == token and m_board[line + 3][col - 3] == '':
-                #    X
-                #   X?
-                #  X??
-                # -???
-                # -???
-                if line + 3 < height - 1 and m_board[line + 3][col] == '':
-                    score += 100
-                #    -
-                #   X-
-                #  X??
-                # X???
-                else:
-                    score += 200
-
-    for col in range(3, width):
-        for line in range(height - 3):
-            if m_board[line][col] == token and m_board[line + 1][col - 1] == token and m_board[line + 2][col - 2] == '' and m_board[line + 3][col - 3] == token:
-                #    X
-                #   X?
-                #  -??
-                # X-??
-                if m_board[line + 3][col - 2] == '':
-                    score += 100
-                #    X
-                #   X?
-                #  -??
-                # X???
-                else:
-                    score += 200
-
-    for col in range(3, width):
-        for line in range(height - 3):
-            if m_board[line][col] == token and m_board[line + 1][col - 1] == '' and m_board[line + 2][col - 2] == token and m_board[line + 3][col - 3] == token:
-                #    X
-                #   -?
-                #  X-?
-                # X???
-                if m_board[line + 2][col - 1] == '':
-                    score += 100
-                #    X
-                #   -?
-                #  X??
-                # X???
-                else:
-                    score += 200
-
-    return score
+            m_board_mirror[line][col] = m_board[line][width - 1 - col]
+    return m_board_mirror

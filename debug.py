@@ -23,7 +23,6 @@ def scoresBestMoves(string, scores, best_moves):
         else:
             dbg_str += '%d (%d)\t' %(scores[move], move)
     writeString(dbg_str)
-    writeString('-' * 55)
 
 def deepScores(string, deep_scores):
     writeString(string)
@@ -58,10 +57,7 @@ def writeBoard(m_board):
     f = open(filename, 'a')
     for line in range(board.height):
         for col in range(board.width):
-            if not (m_board[line][col] == 'X' or m_board[line][col] == 'O'):
-                f.write('\t')
-            else:
-                f.write('%s\t' %m_board[line][col])
+            f.write('%s\t' %m_board[line][col])
         f.write('\n')
     f.write('\n')
     f.close()
