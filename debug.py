@@ -4,60 +4,78 @@ Created on Mar 20, 2016
 @author: guillaume
 '''
 
-import board
-import computer
+from game import WIDTH, HEIGHT
+from computer import MOVE_INVALID, MOVE_WIN, MOVE_LOOSE, MOVE_WIN_2, MOVE_FORCE, MOVE_TRAP
 
 filename = 'connect4.txt'
 f = open(filename, 'w')
 f.close
 
-def scoresBestMoves(string, scores, best_moves):
+def writeBestMoves(string, scores, best_moves):
     dbg_str = string
     for move in best_moves:
-        if scores[move] == computer.invalid_move:
+        if scores[move] == MOVE_INVALID:
             dbg_str += 'I (%d)\t' %move
-        elif scores[move] == computer.winning_move:
+        elif scores[move] == MOVE_WIN:
             dbg_str += 'W (%d)\t' %move
-        elif scores[move] == computer.loosing_move:
+        elif scores[move] == MOVE_LOOSE:
             dbg_str += 'L (%d)\t' %move
+        elif scores[move] == MOVE_FORCE:
+            dbg_str += 'F (%d)\t' %move
+        elif scores[move] == MOVE_TRAP:
+            dbg_str += 'T (%d)\t' %move
+        elif scores[move] == MOVE_WIN_2:
+            dbg_str += 'W2 (%d)\t' %move
         else:
             dbg_str += '%d (%d)\t' %(scores[move], move)
     writeString(dbg_str)
 
-def deepScores(string, deep_scores):
+def writeMoveScores(string, move_scores):
     writeString(string)
-    for scores in deep_scores:
+    for scores in move_scores:
         dbg_str = 'turn score - move:%d      - \t' %scores[0]
-        for move in range(board.width):
-            if scores[1][move] == computer.invalid_move:
+        for move in range(WIDTH):
+            if scores[1][move] == MOVE_INVALID:
                 dbg_str += 'I\t'
-            elif scores[1][move] == computer.winning_move:
+            elif scores[1][move] == MOVE_WIN:
                 dbg_str += 'W\t'
-            elif scores[1][move] == computer.loosing_move:
+            elif scores[1][move] == MOVE_LOOSE:
                 dbg_str += 'L\t'
+            elif scores[1][move] == MOVE_FORCE:
+                dbg_str += 'F\t' %move
+            elif scores[1][move] == MOVE_TRAP:
+                dbg_str += 'T\t' %move
+            elif scores[1][move] == MOVE_WIN_2:
+                dbg_str += 'W2\t' %move
             else:
                 dbg_str += '%d\t' %scores[1][move]
         writeString(dbg_str)
 
-def scores(string, scores):
+def writeScores(string, scores):
     dbg_str = string
-    for move in range(board.width):
-        if scores[move] == computer.invalid_move:
+    for move in range(WIDTH):
+        if scores[move] == MOVE_INVALID:
             dbg_str += 'I\t'
-        elif scores[move] == computer.winning_move:
+        elif scores[move] == MOVE_WIN:
             dbg_str += 'W\t'
-        elif scores[move] == computer.loosing_move:
+        elif scores[move] == MOVE_LOOSE:
             dbg_str += 'L\t'
+        elif scores[move] == MOVE_FORCE:
+            dbg_str += 'F\t' %move
+        elif scores[move] == MOVE_TRAP:
+            dbg_str += 'T\t' %move
+        elif scores[move] == MOVE_WIN_2:
+            dbg_str += 'W2\t' %move
         else:
             dbg_str += '%d\t' %scores[move]
     writeString(dbg_str)
 
 
-def writeBoard(m_board):
+def writeBoard(board):
     f = open(filename, 'a')
-    for line in range(board.height):
-        for col in range(board.width):
-            f.write('%s\t' %m_board[line][col])
+    for line in range(HEIGHT):
+        for col in range(WIDTH):
+            f.write('%s\t' %board[line][col])
         f.write('\n')
     f.write('\n')
     f.close()

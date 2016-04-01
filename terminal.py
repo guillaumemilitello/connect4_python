@@ -5,9 +5,10 @@ Created on Mar 12, 2016
 '''
 
 import curses
-import sys
-import terminalsize
-import board
+from sys import stdout, exit
+from terminalsize import get_terminal_size
+from draw import COL_WIDTH, COL_HEIGHT
+from game import WIDTH, HEIGHT
 
 class position:
     CENTER   = -1
@@ -36,19 +37,19 @@ class keyboard:
     N_UPPER_KEY = 110
 
 def init():
-    height_term, width_term = terminalsize.get_terminal_size()
-    height_min = board.col_height * board.height + 2 + 9
-    width_min = board.col_width * board.width + 2 + 5
+    height_term, width_term = get_terminal_size()
+    height_min = COL_HEIGHT * HEIGHT + 2 + 9
+    width_min = COL_WIDTH * WIDTH + 2 + 5
     if height_term < height_min or width_term < width_min:
         # resize the terminal to fit the minimum size to display the connect4 before exit
-        sys.stdout.write("\x1b[8;{h};{w}t".format(h=max(height_min, height_term), w=max(width_min, width_term)))
-        sys.exit('\033[91m' + 'The terminal was not sized properly, you can now restart ' + '\033[1m' + 'Connect4' + '\033[0m')
+        stdout.write("\x1b[8;{h};{w}t".format(h=max(height_min, height_term), w=max(width_min, width_term)))
+        exit('\033[91m' + 'The terminal was not sized properly, you can now restart ' + '\033[1m' + 'Connect4' + '\033[0m')
     stdscr = curses.initscr()
     height,width = stdscr.getmaxyx()
     if height < height_min or width < width_min:
         # abort the program if the terminal can't be resized
         curses.endwin()
-        sys.exit('Please resize your terminal [%d%s%d] (minimum required %d%s%d)' %(width, 'x', height, width_min, 'x', height_min))
+        exit('Please resize your terminal [%d%s%d] (minimum required %d%s%d)' %(width, 'x', height, width_min, 'x', height_min))
     curses.noecho()
     curses.cbreak()
     curses.curs_set(0)

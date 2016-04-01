@@ -3,8 +3,13 @@ Created on Mar 13, 2016
 
 @author: guillaume
 '''
+
+# board dimensions settings
+COL_WIDTH  = 6
+COL_HEIGHT = 3
+
 import terminal
-import board
+from game import WIDTH, HEIGHT
 
 def menuToken(choice):
     terminal.addString(2, terminal.position.CENTER, 'Connect4', terminal.color.RED, True)
@@ -84,7 +89,7 @@ def boardScores(player_token, computer_token, player_score, computer_score):
 
 def arrowMove(move):
     terminal.clearLine(6)
-    x = terminal.width/2 - (board.width*board.col_width+1)/2 +board.col_width*move+3 
+    x = terminal.width/2 - (WIDTH*COL_WIDTH+1)/2 +COL_WIDTH*move+3 
     terminal.addString(6, x, 'V', terminal.color.BLACK, True)
 
 def arrowMoveClear():
@@ -92,28 +97,28 @@ def arrowMoveClear():
 
 def boardEmpty():
     y = 7
-    for line in range(board.height):
+    for line in range(HEIGHT):
         #empty line
-        terminal.addString(y  , terminal.position.CENTER, ('|'+(' '*(board.col_width-1)))*board.width + '|', terminal.color.BLUE)
-        terminal.addString(y+1, terminal.position.CENTER, ('|'+(' '*(board.col_width-1)))*board.width + '|', terminal.color.BLUE)
+        terminal.addString(y  , terminal.position.CENTER, ('|'+(' '*(COL_WIDTH-1)))*WIDTH + '|', terminal.color.BLUE)
+        terminal.addString(y+1, terminal.position.CENTER, ('|'+(' '*(COL_WIDTH-1)))*WIDTH + '|', terminal.color.BLUE)
         # draw the last line
-        if line == board.height-1:
-            terminal.addString(y+2, terminal.position.CENTER, ('|'+('_'*(board.col_width-1)))*board.width + '|', terminal.color.BLUE)
+        if line == HEIGHT - 1:
+            terminal.addString(y+2, terminal.position.CENTER, ('|'+('_'*(COL_WIDTH-1)))*WIDTH + '|', terminal.color.BLUE)
         else:
-            terminal.addString(y+2, terminal.position.CENTER, ('|'+(' '*(board.col_width-1)))*board.width + '|', terminal.color.BLUE)
+            terminal.addString(y+2, terminal.position.CENTER, ('|'+(' '*(COL_WIDTH-1)))*WIDTH + '|', terminal.color.BLUE)
             y += 3
 
 def boardToken(move, line, token):
-        x = terminal.width/2 - (board.width*board.col_width+1)/2 +board.col_width*move+3
-        y = 7+(board.col_height*line)+1
+        x = terminal.width/2 - (WIDTH*COL_WIDTH+1)/2 +COL_WIDTH*move+3
+        y = 7+(COL_HEIGHT*line)+1
         terminal.addString(y, x, token)
 
 def boardWinnerTokens(move, line, token, winner_tokens):
     for i in range(len(winner_tokens)):
         line = winner_tokens[i][0]
         col  = winner_tokens[i][1]
-        x = terminal.width/2 - (board.width*board.col_width+1)/2 +board.col_width*col+3
-        y = 7+(board.col_height*line)+1
+        x = terminal.width/2 - (WIDTH*COL_WIDTH+1)/2 +COL_WIDTH*col+3
+        y = 7+(COL_HEIGHT*line)+1
         terminal.addString(y, x, token, 0, True)
 
 def noticeMove():
