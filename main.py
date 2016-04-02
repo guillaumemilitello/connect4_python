@@ -107,12 +107,12 @@ def mainMenu():
                 else:
                     first_turn = 'player'
 
-    # level choice, default is 4
+    # level choice, default is 3
     position = 2
     while level == 0:
         draw.menuLevel(position)
         k = getKeywordKey()
-        if k == keyboard.DOWN_KEY and position < 5:
+        if k == keyboard.DOWN_KEY and position < 3:
             position += 1;
         elif k == keyboard.UP_KEY and position > 0:
             position -= 1;
