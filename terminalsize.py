@@ -5,6 +5,8 @@ import struct
 import platform
 import subprocess
 
+# src : https://gist.github.com/jtriley/1108174
+
 def get_terminal_size():
     """ getTerminalSize()
      - get width and height of console
