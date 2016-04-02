@@ -1,2 +1,9 @@
 /.project
 /.pydevproject
+/__pycache__/
+/computer.pyc
+/draw.pyc
+/game.pyc
+/saved_games.pyc
+/terminal.pyc
+/terminalsize.pyc
