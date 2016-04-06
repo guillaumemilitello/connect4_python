@@ -43,21 +43,43 @@ def menuLevel(choice):
         terminal.addString(15, terminal.position.CENTER, '    2   ', terminal.color.GREY)
         terminal.addString(16, terminal.position.CENTER, '    3   ', terminal.color.GREY)
         terminal.addString(17, terminal.position.CENTER, '    4   ', terminal.color.GREY)
+        terminal.addString(18, terminal.position.CENTER, '    5   ', terminal.color.GREY)
+        terminal.addString(19, terminal.position.CENTER, '    6   ', terminal.color.GREY)
     elif choice == 1:
         terminal.addString(14, terminal.position.CENTER, '    1   ', terminal.color.GREY)
         terminal.addString(15, terminal.position.CENTER, '--> 2   ', terminal.color.BLACK, True)
         terminal.addString(16, terminal.position.CENTER, '    3   ', terminal.color.GREY)
         terminal.addString(17, terminal.position.CENTER, '    4   ', terminal.color.GREY)
+        terminal.addString(18, terminal.position.CENTER, '    5   ', terminal.color.GREY)
+        terminal.addString(19, terminal.position.CENTER, '    6   ', terminal.color.GREY)
     elif choice == 2:
         terminal.addString(14, terminal.position.CENTER, '    1   ', terminal.color.GREY)
         terminal.addString(15, terminal.position.CENTER, '    2   ', terminal.color.GREY)
         terminal.addString(16, terminal.position.CENTER, '--> 3   ', terminal.color.BLACK, True)
         terminal.addString(17, terminal.position.CENTER, '    4   ', terminal.color.GREY)
-    else:
+        terminal.addString(18, terminal.position.CENTER, '    5   ', terminal.color.GREY)
+        terminal.addString(19, terminal.position.CENTER, '    6   ', terminal.color.GREY)
+    elif choice == 3:
         terminal.addString(14, terminal.position.CENTER, '    1   ', terminal.color.GREY)
         terminal.addString(15, terminal.position.CENTER, '    2   ', terminal.color.GREY)
         terminal.addString(16, terminal.position.CENTER, '    3   ', terminal.color.GREY)
         terminal.addString(17, terminal.position.CENTER, '--> 4   ', terminal.color.BLACK, True)
+        terminal.addString(18, terminal.position.CENTER, '    5   ', terminal.color.GREY)
+        terminal.addString(19, terminal.position.CENTER, '    6   ', terminal.color.GREY)
+    elif choice == 4:
+        terminal.addString(14, terminal.position.CENTER, '    1   ', terminal.color.GREY)
+        terminal.addString(15, terminal.position.CENTER, '    2   ', terminal.color.GREY)
+        terminal.addString(16, terminal.position.CENTER, '    3   ', terminal.color.GREY)
+        terminal.addString(17, terminal.position.CENTER, '    4   ', terminal.color.GREY)
+        terminal.addString(18, terminal.position.CENTER, '--> 5   ', terminal.color.BLACK, True)
+        terminal.addString(19, terminal.position.CENTER, '    6   ', terminal.color.GREY)
+    else:
+        terminal.addString(14, terminal.position.CENTER, '    1   ', terminal.color.GREY)
+        terminal.addString(15, terminal.position.CENTER, '    2   ', terminal.color.GREY)
+        terminal.addString(16, terminal.position.CENTER, '    3   ', terminal.color.GREY)
+        terminal.addString(17, terminal.position.CENTER, '    4   ', terminal.color.GREY)
+        terminal.addString(18, terminal.position.CENTER, '    5   ', terminal.color.GREY)
+        terminal.addString(19, terminal.position.CENTER, '--> 6   ', terminal.color.BLACK, True)
 
 def menuClear():
     terminal.clearLine(5)
