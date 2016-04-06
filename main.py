@@ -4,15 +4,14 @@ Created on Mar 5, 2016
 @author: guillaume
 '''
 
-import game
 import draw
-import computer
+from game import Game, WIDTH
+from computer import getComputerBestMove
+from terminal import getKeywordKey, close, keyboard
 
 from random import randint
 from signal import signal, SIGINT
 from sys import exit
-from time import clock
-from terminal import getKeywordKey, close, keyboard
 
 QUIT_GAME = -1
 
@@ -47,9 +46,8 @@ def main():
 
             if main_game.turn == 'computer':
                 draw.noticeComputer()
-                start_time = clock()
-                move = computer.getComputerBestMove(main_game)
-                draw.noticeComputerTime(clock() - start_time)
+                move, processing_time = getComputerBestMove(main_game)
+                draw.noticeComputerTime(processing_time)
                 winner_move, line = main_game.makeMove(move)
                 if winner_move:
                     draw.boardWinnerTokens(move, line, main_game.computer_token, main_game.winner_tokens)
@@ -112,7 +110,7 @@ def mainMenu():
     while level == 0:
         draw.menuLevel(position)
         k = getKeywordKey()
-        if k == keyboard.DOWN_KEY and position < 3:
+        if k == keyboard.DOWN_KEY and position < 5:
             position += 1;
         elif k == keyboard.UP_KEY and position > 0:
             position -= 1;
@@ -120,7 +118,7 @@ def mainMenu():
             level = position + 2
 
     draw.menuClear()
-    return game.Game(player_token, first_turn, level)
+    return Game(player_token, first_turn, level)
 
 def menuPlayAgain():
     draw.noticePlayAgain()
@@ -137,7 +135,7 @@ def getHumanMoveArrow(main_game):
         # draw arrow position
         draw.arrowMove(position)
         k = getKeywordKey()
-        if k == keyboard.RIGHT_KEY and position < game.WIDTH - 1:
+        if k == keyboard.RIGHT_KEY and position < WIDTH - 1:
             position += 1
         elif k == keyboard.LEFT_KEY and position > 0:
             position -= 1
