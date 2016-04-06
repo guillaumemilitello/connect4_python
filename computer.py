@@ -1,20 +1,25 @@
 '''
-Created on Mar 12, 2016
+Created on Apr 4, 2016
 
 @author: guillaume
 '''
 
 import game
 import saved_games
+from time import clock
 from game import WIDTH, HEIGHT
 from copy import deepcopy
 from random import choice
+from multiprocessing import Process, Queue
 
 # debug traces on file and verbose level (0 = no trace)
 DEBUG = 0
 
 # number of deeper moves to look for (max : WIDTH)
-deep_moves_number = WIDTH
+DEEP_MOVES_MAX = WIDTH
+
+# multiprocessing support for calculating computer's moves
+MULTIPROCESS = True
 
 # game evaluation coefficients
 MOVE_INVALID = -999999
@@ -27,7 +32,33 @@ MOVE_TRAP    =       5
 if DEBUG:
     import debug
 
+
+# TODO : remove scores
+class turnScoreThread (Process):
+    def __init__(self, move, game, scores_queue, processing_times_queue):
+        Process.__init__(self)
+        self.move = move
+        self.game = game
+        self.scores = [0] * WIDTH
+        self.scores_queue = scores_queue
+        self.processing_times_queue = processing_times_queue
+
+    def run(self):
+        start_time = clock()
+        self.scores = turnScore(self.game)
+        self.scores_queue.put(self.scores)
+        self.processing_times_queue.put(clock() - start_time)
+        return
+
 def getComputerBestMove(main_game):
+
+    global processing_time, start_time
+    processing_time = 0
+    start_time = clock()
+
+    if MULTIPROCESS:
+        global main_level
+        main_level = main_game.level
 
     # adjust write debug level
     global DEBUG_LEVEL
@@ -41,11 +72,14 @@ def getComputerBestMove(main_game):
                 debug.writeString('-'*45 + ' pre-registered game - turn:computer')
                 debug.writeBoard(game.board)
                 debug.writeString('final best move          - (%d)\t' %game.move)
-            return game.move
+            return game.move, 0
 
     # get the score of the different possible moves and the choose the best one
     scores = turnScore(main_game)
     best_moves = [move for move, x in enumerate(scores) if x == max(scores)]
+
+    # update processing time counter
+    processing_time += clock() - start_time
 
     # if several move scores 0
     if all([scores[move] == 0 for move in best_moves]) and len(best_moves) > 1:
@@ -55,26 +89,29 @@ def getComputerBestMove(main_game):
 
         board_center = WIDTH / 2
         if board_center in best_moves:
-            return board_center
+            return board_center, processing_time
         elif board_center - 1 in best_moves and board_center + 1 in best_moves:
-            return choice([board_center - 1, board_center + 1])
+            return choice([board_center - 1, board_center + 1]), processing_time
         elif board_center - 1 in best_moves:
-            return board_center - 1
+            return board_center - 1, processing_time
         elif board_center + 1 in best_moves:
-            return board_center + 1
+            return board_center + 1, processing_time
         elif board_center - 2 in best_moves and board_center + 2 in best_moves:
-            return choice([board_center - 2, board_center + 2])
+            return choice([board_center - 2, board_center + 2]), processing_time
         elif board_center - 2 in best_moves:
-            return board_center - 2
+            return board_center - 2, processing_time
         elif board_center + 2 in best_moves:
-            return board_center + 2
+            return board_center + 2, processing_time
 
     if DEBUG_LEVEL <= main_game.level:
         debug.writeBestMoves('final best moves         - \t', scores, best_moves)
 
-    return choice(best_moves)
+    return choice(best_moves), processing_time
+
 
 def turnScore(game):
+    
+    global processing_time, start_time
 
     scores = [0] * WIDTH
 
@@ -143,7 +180,7 @@ def turnScore(game):
         for score in all_scores:
             if not score[1] in moves and not score[0] == MOVE_INVALID:
                 moves.append(score[1])
-            if len(moves) == deep_moves_number:
+            if len(moves) == DEEP_MOVES_MAX:
                 break
 
         # don't play the others moves
@@ -156,22 +193,64 @@ def turnScore(game):
             move_scores_dbg = []
             debug.writeScores('turnScore          - l:%d - \t' %game.level, scores)
 
-        # return the best score of the calculation level - 1
-        for move in moves:
+        if MULTIPROCESS and  game.level == main_level:
 
-            copy_games[move].level -= 1
+            # return the best score of the calculation level - 1
+            threads = []
+            scores_queue = Queue()
+            processing_times_queue = Queue()
+            scores_thread = deepcopy(scores)
+            processing_times_thread = [0] * WIDTH
 
-            if DEBUG_LEVEL <= copy_games[move].level:
-                debug.writeString('-' * 55 + ' l:%d - m:%d' %(game.level - 1, move))
+            for move in moves:
+                copy_games[move].level -= 1
+                threads.append(turnScoreThread(move, copy_games[move], scores_queue, processing_times_queue))
+                
 
-            move_scores = turnScore(copy_games[move])
-            scores[move] -= max(move_scores)
+            # reset start time before starting the threads
+            processing_time += clock() - start_time
+
+            for t in threads:
+                if DEBUG_LEVEL <= t.game.level:
+                    debug.writeString('-' * 55 + ' l:%d - m:%d' %(t.game.level, move))
+                t.start()
+
+            for t in threads:
+                t.join()
+
+            for t in threads:
+                scores_thread[t.move] = scores_queue.get()
+                processing_times_thread[t.move] = processing_times_queue.get()
+                scores[t.move] -= max(scores_thread[t.move])
+
+                if DEBUG_LEVEL <= game.level:
+                    move_scores_dbg.append((t.move, scores_thread[t.move]))
+
+            # update the processing time
+            processing_time += max(processing_times_thread)
+            start_time = clock()
 
             if DEBUG_LEVEL <= game.level:
-                move_scores_dbg.append((move, move_scores))
+                debug.writeMoveScores('-' * 55, move_scores_dbg)
 
-        if DEBUG_LEVEL <= game.level:
-            debug.writeMoveScores('-' * 55, move_scores_dbg)
+        else:
+            # return the best score of the calculation level - 1
+            for move in moves:
+
+                copy_games[move].level -= 1
+    
+                if DEBUG_LEVEL <= copy_games[move].level:
+                    debug.writeString('-' * 55 + ' l:%d - m:%d' %(game.level - 1, move))
+
+                move_scores = turnScore(copy_games[move])
+                scores[move] -= max(move_scores)
+
+                if DEBUG_LEVEL <= game.level:
+                    move_scores_dbg.append((move, move_scores))
+
+            if DEBUG_LEVEL <= game.level:
+                debug.writeMoveScores('-' * 55, move_scores_dbg)
+
 
     if DEBUG_LEVEL <= game.level:
         debug.writeScores('final scores             - \t', scores)
