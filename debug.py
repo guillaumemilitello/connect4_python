@@ -5,11 +5,13 @@ Created on Mar 20, 2016
 '''
 
 from game import WIDTH, HEIGHT
-from computer import MOVE_INVALID, MOVE_WIN, MOVE_LOOSE, MOVE_WIN_2, MOVE_FORCE, MOVE_TRAP
+from computer import DEBUG, MOVE_INVALID, MOVE_WIN, MOVE_LOOSE, MOVE_WIN_2, MOVE_FORCE, MOVE_TRAP
 
-filename = 'connect4.txt'
-f = open(filename, 'w')
-f.close
+if DEBUG:
+    # open the debug document and reset it
+    filename = 'connect4.txt'
+    f = open(filename, 'w')
+    f.close
 
 def writeBestMoves(string, scores, best_moves):
     dbg_str = string
@@ -42,11 +44,11 @@ def writeMoveScores(string, move_scores):
             elif scores[1][move] == MOVE_LOOSE:
                 dbg_str += 'L\t'
             elif scores[1][move] == MOVE_FORCE:
-                dbg_str += 'F\t' %move
+                dbg_str += 'F\t'
             elif scores[1][move] == MOVE_TRAP:
-                dbg_str += 'T\t' %move
+                dbg_str += 'T\t'
             elif scores[1][move] == MOVE_WIN_2:
-                dbg_str += 'W2\t' %move
+                dbg_str += 'W2\t'
             else:
                 dbg_str += '%d\t' %scores[1][move]
         writeString(dbg_str)
@@ -61,11 +63,11 @@ def writeScores(string, scores):
         elif scores[move] == MOVE_LOOSE:
             dbg_str += 'L\t'
         elif scores[move] == MOVE_FORCE:
-            dbg_str += 'F\t' %move
+            dbg_str += 'F\t'
         elif scores[move] == MOVE_TRAP:
-            dbg_str += 'T\t' %move
+            dbg_str += 'T\t'
         elif scores[move] == MOVE_WIN_2:
-            dbg_str += 'W2\t' %move
+            dbg_str += 'W2\t'
         else:
             dbg_str += '%d\t' %scores[move]
     writeString(dbg_str)
