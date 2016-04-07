@@ -264,31 +264,32 @@ def moveScore(game, move):
         return MOVE_INVALID, MOVE_INVALID
 
     # evaluate the actual game for reference score
-    base_score = boardEvaluation(game.board, game.token())
+    player_base_score = boardEvaluation(game.board, game.token())
+    opponent_base_score = boardEvaluation(game.board, game.tokenOther())
 
     # copy the actual game for opponent check
-    game_other = deepcopy(game)
+    game_opponent = deepcopy(game)
 
-    # generate move for the current game
+    # generate move for the current player
     winner_move, _ = game.makeMove(move)
 
     # check for a winning move
     if winner_move:
         return MOVE_WIN, MOVE_LOOSE
 
-    # evaluate the current move
-    player_score = boardEvaluation(game.board, game.tokenOther())
-    
     # mock an opponent move for the current game 
-    winner_move, _ = game_other.makeMoveOther(move)
+    winner_move, _ = game_opponent.makeMoveOther(move)
 
     if winner_move:
         return MOVE_LOOSE, MOVE_WIN
 
-    # evaluate the mock opponent move
-    opponent_score = boardEvaluation(game_other.board, game_other.token())
+    # evaluate the current move
+    player_score = boardEvaluation(game.board, game.tokenOther())
 
-    return player_score - base_score, opponent_score - base_score
+    # evaluate the mock opponent move
+    opponent_score = boardEvaluation(game_opponent.board, game_opponent.token())
+
+    return player_score - player_base_score, opponent_score - opponent_base_score
 
 def boardEvaluation(board, token):
 
