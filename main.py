@@ -44,7 +44,7 @@ def main():
                 else:
                     draw.boardToken(move, line, main_game.player_token)
 
-            if main_game.turn == 'computer':
+            elif main_game.turn == 'computer':
                 draw.noticeComputer()
                 move, processing_time = getComputerBestMove(main_game)
                 draw.noticeComputerTime(processing_time)
