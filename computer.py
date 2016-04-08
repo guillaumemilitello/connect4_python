@@ -13,7 +13,7 @@ from random import choice
 from multiprocessing import Process, Queue
 
 # debug traces on file and verbose level (0 = no trace)
-DEBUG = 0
+DEBUG = 1
 
 # number of deeper moves to look for (max : WIDTH)
 DEEP_MOVES_MAX = WIDTH
@@ -32,21 +32,17 @@ MOVE_TRAP    =       5
 if DEBUG:
     import debug
 
-
-# TODO : remove scores
 class turnScoreThread (Process):
     def __init__(self, move, game, scores_queue, processing_times_queue):
         Process.__init__(self)
         self.move = move
         self.game = game
-        self.scores = [0] * WIDTH
         self.scores_queue = scores_queue
         self.processing_times_queue = processing_times_queue
 
     def run(self):
         start_time = clock()
-        self.scores = turnScore(self.game)
-        self.scores_queue.put(self.scores)
+        self.scores_queue.put((self.move, turnScore(self.game)))
         self.processing_times_queue.put(clock() - start_time)
         return
 
@@ -199,7 +195,7 @@ def turnScore(game):
             threads = []
             scores_queue = Queue()
             processing_times_queue = Queue()
-            scores_thread = deepcopy(scores)
+            scores_threads = deepcopy(scores)
             processing_times_thread = [0] * WIDTH
 
             for move in moves:
@@ -219,12 +215,13 @@ def turnScore(game):
                 t.join()
 
             for t in threads:
-                scores_thread[t.move] = scores_queue.get()
-                processing_times_thread[t.move] = processing_times_queue.get()
-                scores[t.move] -= max(scores_thread[t.move])
+                scores_thread = scores_queue.get()
+                scores_threads[scores_thread[0]] = scores_thread[1]
+                processing_times_thread[scores_thread[0]] = processing_times_queue.get()
+                scores[scores_thread[0]] -= max(scores_thread[1])
 
                 if DEBUG_LEVEL <= game.level:
-                    move_scores_dbg.append((t.move, scores_thread[t.move]))
+                    move_scores_dbg.append((t.move, scores_thread[1]))
 
             # update the processing time
             processing_time += max(processing_times_thread)
