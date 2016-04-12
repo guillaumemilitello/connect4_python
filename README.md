@@ -6,3 +6,9 @@ Run **main.py** to play, your terminal dimensions must be at least 45 width and 
 ~~~
 python main.py
 ~~~
+
+For color support with curses within your terminal if this is availiable
+
+~~~
+TERM=xterm-256color
+~~~
